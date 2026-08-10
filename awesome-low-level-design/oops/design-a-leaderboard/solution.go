@@ -1,5 +1,7 @@
 package designleaderboard
 
+import "container/heap"
+
 /*
 LeetCode 1244. Design A Leaderboard
 
@@ -58,24 +60,75 @@ TODO:
     need for a fancier order-statistics structure unless you want the extra challenge.
 */
 
+type MinHeap []int
+
+func (h MinHeap) Len() int {
+	return len(h)
+}
+
+func (h MinHeap) Less(i, j int) bool {
+	return h[i] < h[j]
+}
+
+func (h MinHeap) Swap(i, j int) {
+	h[i], h[j] = h[j], h[i]
+}
+
+func (h *MinHeap) Push(x any) {
+	*h = append(*h, x.(int))
+}
+
+func (h *MinHeap) Pop() any {
+	old := *h
+	n := len(old)
+	x := old[n-1]
+	*h = old[:n-1]
+	return x
+}
+
+/*How will i sort the overall */
 type Leaderboard struct {
-	// TODO: add your fields here
+	player map[int]int
 }
 
 func NewLeaderboard() *Leaderboard {
-	// TODO: implement
-	return &Leaderboard{}
+	return &Leaderboard{
+		player: make(map[int]int),
+	}
 }
 
 func (l *Leaderboard) AddScore(playerId int, score int) {
-	// TODO: implement
+	if _, exist := l.player[playerId]; !exist {
+		l.player[playerId] = score
+	} else {
+		l.player[playerId] += score
+	}
+
 }
 
 func (l *Leaderboard) Top(K int) int {
-	// TODO: implement
-	return 0
+	total_sum := 0
+	// using minHeap i can easily solve this
+	MinHeap := &MinHeap{}
+	heap.Init(MinHeap)
+	for _, score := range l.player {
+		if MinHeap.Len() < K {
+			heap.Push(MinHeap, score)
+		} else if score > (*MinHeap)[0] {
+			heap.Pop(MinHeap)
+			heap.Push(MinHeap, score)
+		}
+	}
+	for MinHeap.Len() > 0 {
+		total_sum += heap.Pop(MinHeap).(int)
+	}
+	return total_sum
 }
 
 func (l *Leaderboard) Reset(playerId int) {
-	// TODO: implement
+	if _, exist := l.player[playerId]; exist {
+		l.player[playerId] = 0
+		delete(l.player, playerId)
+	}
+
 }
