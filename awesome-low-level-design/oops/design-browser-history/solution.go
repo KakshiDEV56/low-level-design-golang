@@ -66,24 +66,44 @@ TODO:
 */
 
 type BrowserHistory struct {
-	// TODO: add your fields here
+	visitedURL       []string
+	currentURL_index int
 }
 
 func NewBrowserHistory(homepage string) *BrowserHistory {
-	// TODO: implement
-	return &BrowserHistory{}
+
+	return &BrowserHistory{
+		visitedURL:       []string{homepage},
+		currentURL_index: 0,
+	}
 }
 
 func (b *BrowserHistory) Visit(url string) {
-	// TODO: implement
+	// simply i am going to append the URL in the in the VisitedURL by creating the slice of the visitedURL from the 0 to the current index
+	b.visitedURL = b.visitedURL[:b.currentURL_index+1]
+	b.visitedURL = append(b.visitedURL, url)
+	b.currentURL_index++
 }
 
 func (b *BrowserHistory) Back(steps int) string {
-	// TODO: implement
+	if b.currentURL_index >= steps {
+		// updating the current URL index also
+		b.currentURL_index = b.currentURL_index - steps
+		return b.visitedURL[b.currentURL_index]
+	} else if b.currentURL_index < steps {
+		b.currentURL_index = 0
+		return b.visitedURL[b.currentURL_index]
+	}
 	return ""
 }
 
 func (b *BrowserHistory) Forward(steps int) string {
-	// TODO: implement
+	if b.currentURL_index+steps < len(b.visitedURL) {
+		b.currentURL_index = b.currentURL_index + steps
+		return b.visitedURL[b.currentURL_index]
+	} else if b.currentURL_index+steps >= len(b.visitedURL) {
+		b.currentURL_index = len(b.visitedURL) - 1
+		return b.visitedURL[b.currentURL_index]
+	}
 	return ""
 }
