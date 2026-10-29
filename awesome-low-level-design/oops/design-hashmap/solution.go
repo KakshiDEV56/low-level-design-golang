@@ -40,9 +40,9 @@ Constraints:
 TODO:
  1. The whole point of this exercise is to build the hash table yourself — do NOT store
     everything in a single Go `map[int]int`. Instead:
-      - Pick a fixed number of buckets (e.g. 1000 or a prime like 769).
-      - Add a bucket array field where each bucket holds a chain of (key, value) pairs
-        (e.g. a slice or linked list per bucket) to handle collisions.
+    - Pick a fixed number of buckets (e.g. 1000 or a prime like 769).
+    - Add a bucket array field where each bucket holds a chain of (key, value) pairs
+    (e.g. a slice or linked list per bucket) to handle collisions.
  2. Write a hash function mapping a key to a bucket index (e.g. key % numBuckets).
  3. Implement NewMyHashMap: allocate the bucket array.
  4. Implement Put: hash the key to find its bucket, then either update the existing
@@ -53,24 +53,89 @@ TODO:
     present (no-op if the key isn't there).
 */
 
+type Node struct {
+	Key  int
+	Val  int
+	Next *Node
+}
 type MyHashMap struct {
 	// TODO: add your fields here (e.g. a slice of buckets)
+
+	bucketArr []*Node
 }
+
+const (
+	bucketSize int = 769
+)
 
 func NewMyHashMap() *MyHashMap {
 	// TODO: implement
-	return &MyHashMap{}
+	bucketarr := make([]*Node, bucketSize)
+
+	return &MyHashMap{
+		bucketArr: bucketarr,
+	}
+}
+
+func hash(key int) int {
+	hashval := key % bucketSize
+	return hashval
 }
 
 func (m *MyHashMap) Put(key int, value int) {
 	// TODO: implement
+	hashIndex := hash(key)
+	curr := m.bucketArr[hashIndex]
+	if curr == nil {
+		m.bucketArr[hashIndex] = &Node{
+			Key: key,
+			Val: value,
+		}
+		return
+	}
+	prev := (*Node)(nil)
+	for curr != nil {
+		if curr.Key == key {
+			curr.Val = value
+			return
+		}
+		prev = curr
+		curr = curr.Next
+	}
+
+	prev.Next = &Node{
+		Key: key, Val: value,
+	}
 }
 
 func (m *MyHashMap) Get(key int) int {
 	// TODO: implement
+	hashIndex := hash(key)
+	curr := m.bucketArr[hashIndex]
+	for curr != nil {
+		if curr.Key == key {
+			return curr.Val
+		}
+		curr = curr.Next
+	}
 	return -1
 }
 
 func (m *MyHashMap) Remove(key int) {
 	// TODO: implement
+	hashIndex := hash(key)
+	curr := m.bucketArr[hashIndex]
+	prev := (*Node)(nil)
+	for curr != nil {
+		if curr.Key == key {
+			if prev == nil {
+				m.bucketArr[hashIndex] = curr.Next
+			} else {
+				prev.Next = curr.Next
+			}
+			return
+		}
+		prev = curr
+		curr = curr.Next
+	}
 }
